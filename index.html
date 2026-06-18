@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Трекер идей</title>
+<style>
+  :root {
+    --bg: #f7f6f3;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #e2e0d8;
+    --border2: #cccab8;
+    --text: #1a1a17;
+    --text2: #6b6a62;
+    --text3: #a09f97;
+    --purple: #6b5ce7;
+    --purple-bg: #f0eeff;
+    --purple-border: #c9c1f7;
+    --amber: #d97706;
+    --amber-bg: #fffbeb;
+    --amber-border: #fcd34d;
+    --green: #059669;
+    --green-bg: #ecfdf5;
+    --green-border: #6ee7b7;
+    --coral: #dc4f30;
+    --coral-bg: #fff5f2;
+    --coral-border: #fca48c;
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    --red-border: #fca5a5;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141412;
+      --surface: #1e1e1b;
+      --surface2: #28271f;
+      --border: #2e2d26;
+      --border2: #3d3c32;
+      --text: #e8e6dd;
+      --text2: #9e9c91;
+      --text3: #5c5b54;
+      --purple-bg: #1e1a38;
+      --purple-border: #4a3fa0;
+      --amber-bg: #1e1800;
+      --amber-border: #92580a;
+      --green-bg: #021f12;
+      --green-border: #065f46;
+      --coral-bg: #1f0e08;
+      --coral-border: #7f2d1a;
+      --red-bg: #1f0a0a;
+      --red-border: #7f1d1d;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; min-height: 100vh; }
+
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; gap: 16px; height: 56px; }
+  .header-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .header-sub { font-size: 12px; color: var(--text3); }
+  .header-spacer { flex: 1; }
+  .api-key-wrap { display: flex; align-items: center; gap: 8px; }
+  .api-key-wrap label { font-size: 12px; color: var(--text2); white-space: nowrap; }
+  .api-key-input { font-size: 12px; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface2); color: var(--text); width: 220px; font-family: monospace; }
+  .api-key-input:focus { outline: none; border-color: var(--purple); }
+
+  .main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+
+  .input-row { display: flex; gap: 10px; margin-bottom: 20px; }
+  .idea-textarea { flex: 1; resize: none; height: 56px; padding: 10px 14px; border-radius: var(--radius); border: 1px solid var(--border2); background: var(--surface); color: var(--text); font-size: 14px; font-family: inherit; line-height: 1.4; transition: border-color .15s; }
+  .idea-textarea:focus { outline: none; border-color: var(--purple); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 0 16px; height: 56px; border-radius: var(--radius); border: 1px solid var(--border2); background: var(--surface); color: var(--text); font-size: 13px; font-family: inherit; cursor: pointer; white-space: nowrap; transition: background .15s, border-color .15s; }
+  .btn:hover { background: var(--surface2); }
+  .btn:active { opacity: .8; }
+  .btn-primary { background: var(--purple); border-color: var(--purple); color: #fff; }
+  .btn-primary:hover { background: #5a4dd4; border-color: #5a4dd4; }
+  .btn-mic { width: 56px; padding: 0; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .btn-mic.recording { background: var(--red-bg); border-color: var(--red-border); color: var(--red); }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; }
+  .stat-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+  .stat-val { font-size: 28px; font-weight: 600; color: var(--text); }
+
+  .board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .col { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; min-height: 200px; }
+  .col-head { display: flex; align-items: center; gap: 7px; margin-bottom: 12px; }
+  .col-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .col-title { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; }
+  .col-count { margin-left: auto; font-size: 11px; color: var(--text3); background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1px 7px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-bottom: 10px; }
+  .card:last-child { margin-bottom: 0; }
+  .card-text { font-size: 13px; color: var(--text); line-height: 1.5; margin-bottom: 5px; }
+  .card-date { font-size: 11px; color: var(--text3); margin-bottom: 10px; }
+  .score-pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-bottom: 8px; }
+  .score-hi { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .score-mid { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+  .score-lo { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .analysis { font-size: 11px; color: var(--text2); line-height: 1.6; border-left: 3px solid var(--border2); padding-left: 8px; margin-bottom: 8px; }
+  .analysis.proceed { border-left-color: var(--green); }
+  .analysis.hold { border-left-color: var(--amber); }
+  .analysis.archive { border-left-color: var(--red); }
+  .analysis b { color: var(--text); }
+  .experiment { font-size: 11px; color: var(--text2); line-height: 1.6; border-left: 3px solid var(--purple-border); padding-left: 8px; margin-bottom: 8px; }
+  .card-actions { display: flex; gap: 5px; flex-wrap: wrap; }
+  .card-btn { font-size: 11px; padding: 3px 9px; border-radius: 5px; border: 1px solid var(--border2); background: transparent; color: var(--text2); cursor: pointer; font-family: inherit; transition: background .1s; }
+  .card-btn:hover { background: var(--surface2); }
+  .card-btn.primary { color: var(--purple); border-color: var(--purple-border); }
+  .card-btn.primary:hover { background: var(--purple-bg); }
+  .card-btn.danger { color: var(--red); border-color: var(--red-border); }
+  .card-btn.danger:hover { background: var(--red-bg); }
+  .card-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  .analyzing { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text3); padding: 4px 0 8px; }
+  .spinner { width: 14px; height: 14px; border: 2px solid var(--border2); border-top-color: var(--purple); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty { font-size: 12px; color: var(--text3); text-align: center; padding: 24px 0; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); border-radius: var(--radius); padding: 10px 20px; font-size: 13px; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 999; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+
+  .no-api { background: var(--amber-bg); border: 1px solid var(--amber-border); border-radius: var(--radius); padding: 10px 14px; font-size: 12px; color: var(--amber); margin-bottom: 16px; display: none; }
+  .no-api.visible { display: block; }
+
+  @media (max-width: 900px) {
+    .board { grid-template-columns: repeat(2, 1fr); }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .header { flex-wrap: wrap; height: auto; padding: 12px 16px; gap: 10px; }
+    .main { padding: 14px 16px; }
+  }
+  @media (max-width: 560px) {
+    .board { grid-template-columns: 1fr; }
+    .api-key-input { width: 160px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">Трекер идей</div>
+    <div class="header-sub">AgriTech &amp; beyond</div>
+  </div>
+  <div class="header-spacer"></div>
+  <div class="api-key-wrap">
+    <label for="apiKey">API-ключ Anthropic:</label>
+    <input type="password" id="apiKey" class="api-key-input" placeholder="sk-ant-..." autocomplete="off">
+  </div>
+</div>
+
+<div class="main">
+  <div class="no-api" id="noApiWarn">
+    Введи API-ключ Anthropic вверху — без него автоматическая оценка работать не будет. Ключ хранится только в браузере.
+  </div>
+
+  <div class="input-row">
+    <button class="btn btn-mic" id="micBtn" title="Голосовой ввод" onclick="toggleMic()">🎤</button>
+    <textarea class="idea-textarea" id="ideaInput" placeholder="Опиши идею... (Enter — добавить, Shift+Enter — перенос строки)"></textarea>
+    <button class="btn btn-primary" onclick="addIdea()">+ Добавить</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Всего идей</div><div class="stat-val" id="sTotal">0</div></div>
+    <div class="stat"><div class="stat-label">Ожидают оценки</div><div class="stat-val" id="sNew">0</div></div>
+    <div class="stat"><div class="stat-label">Инкубируется</div><div class="stat-val" id="sIncubate">0</div></div>
+    <div class="stat"><div class="stat-label">Запущено</div><div class="stat-val" id="sLaunch">0</div></div>
+  </div>
+
+  <div class="board">
+    <div class="col">
+      <div class="col-head"><span class="col-dot" style="background:#6b5ce7"></span><span class="col-title">Новые</span><span class="col-count" id="cntNew">0</span></div>
+      <div id="col-new"></div>
+    </div>
+    <div class="col">
+      <div class="col-head"><span class="col-dot" style="background:#d97706"></span><span class="col-title">Оценены</span><span class="col-count" id="cntFilter">0</span></div>
+      <div id="col-filter"></div>
+    </div>
+    <div class="col">
+      <div class="col-head"><span class="col-dot" style="background:#059669"></span><span class="col-title">Инкубация</span><span class="col-count" id="cntIncubate">0</span></div>
+      <div id="col-incubate"></div>
+    </div>
+    <div class="col">
+      <div class="col-head"><span class="col-dot" style="background:#dc4f30"></span><span class="col-title">Запущено</span><span class="col-count" id="cntLaunch">0</span></div>
+      <div id="col-launch"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'idea_tracker_v1';
+let ideas = [];
+
+function load() {
+  try { ideas = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { ideas = []; }
+}
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(ideas));
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+function nowStr() { return new Date().toLocaleDateString('ru', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}); }
+
+function toast(msg, duration=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), duration);
+}
+
+function getApiKey() { return document.getElementById('apiKey').value.trim(); }
+
+document.getElementById('apiKey').addEventListener('input', function() {
+  if (this.value.trim()) localStorage.setItem('idea_tracker_apikey', this.value.trim());
+  checkApiWarn();
+});
+
+function checkApiWarn() {
+  const warn = document.getElementById('noApiWarn');
+  warn.classList.toggle('visible', !getApiKey());
+}
+
+function addIdea() {
+  const ta = document.getElementById('ideaInput');
+  const text = ta.value.trim();
+  if (!text) return;
+  const idea = { id: uid(), text, stage: 'new', created: nowStr(), score: null, analysis: null };
+  ideas.push(idea);
+  ta.value = '';
+  save();
+  render();
+  if (getApiKey()) autoAssess(idea);
+  else toast('Идея добавлена. Введи API-ключ для автоматической оценки.');
+}
+
+async function autoAssess(idea) {
+  idea.stage = 'assessing';
+  render();
+  const prompt = `Ты опытный продуктовый менеджер. Оцени идею строго как JSON (без markdown, без пояснений вне JSON).
+
+Идея: "${idea.text}"
+
+Верни JSON:
+{"score":7,"problem":"...","feasibility":"...","uniqueness":"...","verdict":"proceed","hypothesis":"Если сделать X, то Y, потому что Z.","experiment":"минимальный эксперимент за 1-3 дня"}
+
+verdict: "proceed" (развивать), "hold" (отложить), "archive" (архив)`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': getApiKey(),
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-allow-cors': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 700,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error('HTTP ' + resp.status + ': ' + err.slice(0, 120));
+    }
+    const data = await resp.json();
+    const raw = data.content.map(b => b.text || '').join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const i1 = clean.indexOf('{'), i2 = clean.lastIndexOf('}');
+    if (i1 === -1) throw new Error('JSON не найден в ответе');
+    const parsed = JSON.parse(clean.slice(i1, i2 + 1));
+    idea.score = parsed.score;
+    idea.analysis = parsed;
+    idea.stage = parsed.verdict === 'proceed' ? 'incubate' : parsed.verdict === 'archive' ? 'archive' : 'filter';
+    toast('Оценка готова: ' + idea.score + '/10');
+  } catch(e) {
+    idea.stage = 'new';
+    idea.analysis = null;
+    toast('Ошибка оценки: ' + e.message, 4000);
+  }
+  save();
+  render();
+}
+
+function setStage(id, stage) {
+  const i = ideas.find(x => x.id === id);
+  if (i) { i.stage = stage; save(); render(); }
+}
+function removeIdea(id) {
+  if (!confirm('Удалить идею?')) return;
+  ideas = ideas.filter(x => x.id !== id);
+  save();
+  render();
+}
+function scoreClass(s) { return s >= 7 ? 'score-hi' : s >= 4 ? 'score-mid' : 'score-lo'; }
+
+function renderCard(idea) {
+  const div = document.createElement('div');
+  div.className = 'card';
+
+  const txt = document.createElement('div');
+  txt.className = 'card-text';
+  txt.textContent = idea.text;
+  div.appendChild(txt);
+
+  const date = document.createElement('div');
+  date.className = 'card-date';
+  date.textContent = idea.created;
+  div.appendChild(date);
+
+  if (idea.stage === 'assessing') {
+    const a = document.createElement('div');
+    a.className = 'analyzing';
+    a.innerHTML = '<div class="spinner"></div><span>AI оценивает...</span>';
+    div.appendChild(a);
+    return div;
+  }
+
+  if (idea.score != null) {
+    const pill = document.createElement('span');
+    pill.className = 'score-pill ' + scoreClass(idea.score);
+    pill.textContent = 'Оценка: ' + idea.score + '/10';
+    div.appendChild(pill);
+  }
+
+  if (idea.analysis && !idea.analysis.error) {
+    const a = idea.analysis;
+    const vc = idea.stage === 'incubate' ? 'proceed' : idea.stage === 'archive' ? 'archive' : 'hold';
+    const det = document.createElement('div');
+    det.className = 'analysis ' + vc;
+    det.innerHTML = '<b>Проблема:</b> ' + a.problem + '<br><b>Реализация:</b> ' + a.feasibility + '<br><b>Уникальность:</b> ' + a.uniqueness;
+    div.appendChild(det);
+    if (a.hypothesis) {
+      const hyp = document.createElement('div');
+      hyp.className = 'experiment';
+      hyp.innerHTML = '<b>Гипотеза:</b> ' + a.hypothesis;
+      div.appendChild(hyp);
+    }
+    if (a.experiment) {
+      const exp = document.createElement('div');
+      exp.className = 'experiment';
+      exp.innerHTML = '<b>Эксперимент:</b> ' + a.experiment;
+      div.appendChild(exp);
+    }
+  }
+
+  const acts = document.createElement('div');
+  acts.className = 'card-actions';
+
+  if (idea.stage === 'new') {
+    const b = document.createElement('button');
+    b.className = 'card-btn primary';
+    b.textContent = getApiKey() ? 'Оценить →' : 'Нет API-ключа';
+    b.disabled = !getApiKey();
+    b.onclick = () => autoAssess(idea);
+    acts.appendChild(b);
+  }
+  if (idea.stage === 'filter') {
+    mk(acts, '→ Инкубация', 'primary', () => setStage(idea.id, 'incubate'));
+    mk(acts, 'Отложить', '', () => setStage(idea.id, 'hold'));
+    mk(acts, 'Переоценить', '', () => autoAssess(idea));
+  }
+  if (idea.stage === 'incubate') {
+    mk(acts, '→ Запустить', 'primary', () => setStage(idea.id, 'launch'));
+    mk(acts, 'Переоценить', '', () => autoAssess(idea));
+  }
+  if (idea.stage === 'launch') {
+    mk(acts, 'Завершить', '', () => setStage(idea.id, 'done'));
+  }
+  if (idea.stage === 'hold') {
+    mk(acts, '→ Вернуть', 'primary', () => setStage(idea.id, 'new'));
+  }
+
+  mk(acts, 'Удалить', 'danger', () => removeIdea(idea.id));
+  div.appendChild(acts);
+  return div;
+}
+
+function mk(parent, label, cls, fn) {
+  const b = document.createElement('button');
+  b.className = 'card-btn' + (cls ? ' ' + cls : '');
+  b.textContent = label;
+  b.onclick = fn;
+  parent.appendChild(b);
+  return b;
+}
+
+function render() {
+  const stageMap = { new: 'col-new', filter: 'col-filter', incubate: 'col-incubate', launch: 'col-launch', assessing: 'col-new', hold: 'col-filter' };
+  const colIds = ['col-new', 'col-filter', 'col-incubate', 'col-launch'];
+  colIds.forEach(id => document.getElementById(id).innerHTML = '');
+
+  ideas.forEach(idea => {
+    const colId = stageMap[idea.stage];
+    if (!colId) return;
+    document.getElementById(colId).appendChild(renderCard(idea));
+  });
+
+  colIds.forEach(id => {
+    if (!document.getElementById(id).children.length)
+      document.getElementById(id).innerHTML = '<div class="empty">Пусто</div>';
+  });
+
+  document.getElementById('sTotal').textContent = ideas.length;
+  document.getElementById('sNew').textContent = ideas.filter(i => i.stage === 'new' || i.stage === 'assessing').length;
+  document.getElementById('sIncubate').textContent = ideas.filter(i => i.stage === 'incubate').length;
+  document.getElementById('sLaunch').textContent = ideas.filter(i => i.stage === 'launch').length;
+  document.getElementById('cntNew').textContent = ideas.filter(i => i.stage === 'new' || i.stage === 'assessing').length;
+  document.getElementById('cntFilter').textContent = ideas.filter(i => i.stage === 'filter' || i.stage === 'hold').length;
+  document.getElementById('cntIncubate').textContent = ideas.filter(i => i.stage === 'incubate').length;
+  document.getElementById('cntLaunch').textContent = ideas.filter(i => i.stage === 'launch').length;
+}
+
+let recognition = null, isRec = false;
+function toggleMic() {
+  const btn = document.getElementById('micBtn');
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast('Голосовой ввод поддерживается только в Chrome/Safari'); return; }
+  if (!isRec) {
+    recognition = new SR();
+    recognition.lang = 'ru-RU';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.onresult = e => { document.getElementById('ideaInput').value = e.results[0][0].transcript; };
+    recognition.onerror = e => { toast('Ошибка микрофона: ' + e.error); stopMic(); };
+    recognition.onend = () => stopMic();
+    recognition.start();
+    isRec = true;
+    btn.classList.add('recording');
+    btn.textContent = '⏹';
+    btn.title = 'Остановить запись';
+  } else {
+    recognition && recognition.stop();
+    stopMic();
+  }
+}
+function stopMic() {
+  isRec = false;
+  const btn = document.getElementById('micBtn');
+  btn.classList.remove('recording');
+  btn.textContent = '🎤';
+  btn.title = 'Голосовой ввод';
+}
+
+document.getElementById('ideaInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addIdea(); }
+});
+
+load();
+const savedKey = localStorage.getItem('idea_tracker_apikey');
+if (savedKey) document.getElementById('apiKey').value = savedKey;
+checkApiWarn();
+render();
+</script>
+</body>
+</html>
